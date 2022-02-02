@@ -7,12 +7,11 @@ import fr.alkanife.botcommons.Utils;
 import fr.alkanife.satania.Satania;
 import fr.alkanife.satania.music.Music;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Emote;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
+import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -26,6 +25,66 @@ public class Commands {
 
     private String offsetToString(OffsetDateTime offsetDateTime) {
         return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new Date(offsetDateTime.toInstant().toEpochMilli()));
+    }
+
+    @Command(name = "satania")
+    public void satania(SlashCommandEvent slashCommandEvent) {
+        slashCommandEvent.reply(Lang.t("satania-command")).setEphemeral(true).queue();
+    }
+
+    @Command(name = "copy")
+    public void copy(SlashCommandEvent slashCommandEvent) {
+        try {
+            OptionMapping copyOption = slashCommandEvent.getOption("input");
+
+            String copyURL = copyOption.getAsString();
+
+            if (!Utils.isURL(copyURL)) {
+                slashCommandEvent.reply(Lang.t("copy-command-error-noturl")).setEphemeral(true).queue();
+                return;
+            } // 6
+
+            String[] args = copyURL.split("/"); // 4 5 6
+
+            String serverId = args[4];
+            String channelId = args[5];
+            String messageId = args[6];
+
+            /*Satania.getLogger().info(serverId);
+            Satania.getLogger().info(channelId);
+            Satania.getLogger().info(messageId);*/
+
+            Guild guild = slashCommandEvent.getJDA().getGuildById(serverId);
+
+            if (guild == null) {
+                slashCommandEvent.reply(Lang.t("copy-command-error-guild")).setEphemeral(true).queue();
+                return;
+            }
+
+            TextChannel textChannel = guild.getTextChannelById(channelId);
+
+            if (textChannel == null) {
+                slashCommandEvent.reply(Lang.t("copy-command-error-channel")).setEphemeral(true).queue();
+                return;
+            }
+
+            textChannel.retrieveMessageById(messageId).queue(message -> {
+                if (message == null) {
+                    slashCommandEvent.reply(Lang.t("copy-command-error-message")).setEphemeral(true).queue();
+                    return;
+                }
+
+                /*Satania.getLogger().info(guild.getName());
+                Satania.getLogger().info(textChannel.getName());
+                Satania.getLogger().info(message.getAuthor().getName()); display*/
+
+                slashCommandEvent.reply("``` " + message.getContentDisplay() + "```").setEphemeral(true).queue();
+            });
+
+
+        } catch (Exception exception) {
+            slashCommandEvent.reply(Lang.t("copy-command-error")).setEphemeral(true).queue();
+        }
     }
 
     @Command(name = "serverinfo")
@@ -122,6 +181,8 @@ public class Commands {
             return;
         }
 
+        Satania.setLastCommandChannel(slashCommandEvent.getTextChannel());
+
         String subCommand = slashCommandEvent.getSubcommandName();
 
         switch (subCommand) {
@@ -149,31 +210,87 @@ public class Commands {
                 Music.loadAndPlay(slashCommandEvent, url1, true);
                 break;
 
+            case "remove":
+                if (Satania.getPlayer().getPlayingTrack() == null) {
+                    slashCommandEvent.reply(Lang.t("jukebox-command-no-current")).queue();
+                    return;
+                }
+
+                OptionMapping removeOption = slashCommandEvent.getOption("input");
+
+                long remove = 1;
+
+                if (removeOption != null) {
+                    remove = removeOption.getAsLong();
+
+                    if (remove >= Satania.getTrackScheduler().getQueue().size()) {
+                        slashCommandEvent.reply(Lang.t("jukebox-command-notenough")).queue();
+                        return;
+                    }
+                }
+
+                List<AudioTrack> aTracks = new ArrayList<>(Satania.getTrackScheduler().getQueue());
+
+                try {
+                    AudioTrack t = aTracks.get(((int) remove)-1);
+
+                    aTracks.remove(t);
+
+                    BlockingQueue<AudioTrack> newBlockingQueue = new LinkedBlockingQueue<>();
+
+                    for (AudioTrack audioTrack : aTracks)
+                        newBlockingQueue.offer(audioTrack);
+
+                    Satania.getTrackScheduler().setQueue(newBlockingQueue);
+
+                    EmbedBuilder embedBuilder = new EmbedBuilder();
+                    embedBuilder.setTitle(Lang.t("jukebox-command-remove-title"));
+                    embedBuilder.setDescription("[" + t.getInfo().title + "](" + t.getInfo().uri + ")"
+                            + " " + Lang.t("jukebox-by") + " [" + t.getInfo().author + "](" + t.getInfo().uri + ")");
+                    embedBuilder.setThumbnail("https://img.youtube.com/vi/" + t.getIdentifier() + "/0.jpg");
+
+                    slashCommandEvent.replyEmbeds(embedBuilder.build()).queue();
+                } catch (Exception e) {
+                    slashCommandEvent.reply(Lang.t("jukebox-command-remove-error")).queue();
+                }
+
+                /*Collections.shuffle(audioTracks);
+
+                BlockingQueue<AudioTrack> blockingQueue = new LinkedBlockingQueue<>();
+
+                for (AudioTrack audioTrack : audioTracks)
+                    blockingQueue.offer(audioTrack);
+
+                Satania.getTrackScheduler().setQueue(blockingQueue);*/
+
+
+                break;
+
             case "skip":
                 if (Satania.getPlayer().getPlayingTrack() == null) {
                     slashCommandEvent.reply(Lang.t("jukebox-command-no-current")).queue();
                     return;
                 }
 
-                OptionMapping option = slashCommandEvent.getOption("input");
+                OptionMapping skipSize = slashCommandEvent.getOption("input");
 
                 int skip = 0;
 
-                if (option != null) {
-                    long optionLong = option.getAsLong();
+                if (skipSize != null) {
+                    long skipLong = skipSize.getAsLong();
 
-                    if (optionLong >= Satania.getTrackScheduler().getQueue().size()) {
-                        slashCommandEvent.reply(Lang.t("jukebox-command-skip-nope")).queue();
+                    if (skipLong >= Satania.getTrackScheduler().getQueue().size()) {
+                        slashCommandEvent.reply(Lang.t("jukebox-command-notenough")).queue();
                         return;
                     }
 
-                    for (skip = 0; skip < optionLong; skip++)
+                    for (skip = 0; skip < skipLong; skip++)
                         Satania.getTrackScheduler().getQueue().remove();
                 }
 
                 Satania.getTrackScheduler().nextTrack();
 
-                if (option == null)
+                if (skipSize == null)
                     slashCommandEvent.reply(Lang.t("jukebox-command-skip-one")).queue();
                 else
                     slashCommandEvent.reply(Lang.t("jukebox-command-skip-mult", String.valueOf(skip))).queue();
@@ -213,15 +330,45 @@ public class Commands {
                     return;
                 }
 
+                List<AudioTrack> tracks = new ArrayList<>(Satania.getTrackScheduler().getQueue());
+
+                int tracksSize = tracks.size();
+                int pages = 0;
+
+                if (!endsWithZero(tracksSize)) {
+                    for (int i = 0; i < 11; i++) {
+                        if (endsWithZero(tracksSize))
+                            break;
+
+                        tracksSize++;
+                    }
+                }
+
+                pages = tracksSize / 10;
+
+                OptionMapping pageOption = slashCommandEvent.getOption("input");
+                int page = 0;
+
+                if (pageOption != null)
+                    page = ((int) pageOption.getAsLong()) - 1;
+
+                if (page < 0)
+                    page = 0;
+
+                if ((page-1) > pages) { //todo bug
+                    slashCommandEvent.reply(Lang.t("jukebox-command-queue-outofrange")).queue();
+                    return;
+                }
+
                 slashCommandEvent.deferReply().queue();
 
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 String desc = "";
-                if (Satania.getTrackScheduler().getQueue().size() == 0) {
+                if (tracks.size() == 0) {
                     embedBuilder.setTitle(Lang.t("jukebox-command-queue-now-playing"));
                     embedBuilder.setThumbnail("https://img.youtube.com/vi/" + current.getIdentifier() + "/0.jpg");
                     desc += "**[" + current.getInfo().title + "](" + current.getInfo().uri + ")** [" + Utils.musicDuration(current.getDuration()) + "]";
-                } else {                                                                           // v because String.valueOf don't work?
+                } else {                                                                           // '~' because String.valueOf don't work?
                     embedBuilder.setTitle(Lang.t("jukebox-command-queue-queued-title", "~"+Satania.getTrackScheduler().getQueue().size()));
                     embedBuilder.setThumbnail(Lang.t("jukebox-command-plgif"));
                     desc = "__" + Lang.t("jukebox-command-queue-queued-now-playing") + "__\n" +
@@ -229,17 +376,17 @@ public class Commands {
                             "\n" +
                             "__" + Lang.t("jukebox-command-queue-queued-incoming") + "__\n";
 
-                    int i = 0;
-
-                    for (AudioTrack audioTrack : Satania.getTrackScheduler().getQueue()) {
-                        i++;
-                        desc += "`" + i + ".` [" + audioTrack.getInfo().title + "](" + audioTrack.getInfo().uri + ") [" + Utils.musicDuration(audioTrack.getDuration()) + "]\n";
-
-                        if (i > 9)
+                    for (int i = (page*10); i < ((page*10)+10); i++) {
+                        try{
+                            AudioTrack audioTrack = tracks.get(i);
+                            desc += "`" + (i+1) + ".` [" + audioTrack.getInfo().title + "](" + audioTrack.getInfo().uri + ") [" + Utils.musicDuration(audioTrack.getDuration()) + "]\n";
+                        }catch (Exception e) {
                             break;
+                        }
                     }
 
-                    desc += "\n__" + Lang.t("jukebox-command-queue-queued-time") + "__ `" + Utils.musicDuration(Satania.getTrackScheduler().getQueueDuration()) + "`";
+                    desc += "\n__" + Lang.t("jukebox-command-queue-queued-time") + "__ `" + Utils.musicDuration(Satania.getTrackScheduler().getQueueDuration()) + "`\n\n" +
+                            "**PAGE " + (page+1) + " / " + pages + "**\n\n";
                 }
 
                 embedBuilder.setDescription(desc);
@@ -247,5 +394,9 @@ public class Commands {
                 slashCommandEvent.getHook().sendMessageEmbeds(embedBuilder.build()).queue();
                 break;
         }
+    }
+
+    private boolean endsWithZero(int i) {
+        return Integer.toString(i).endsWith("0");
     }
 }

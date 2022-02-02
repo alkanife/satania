@@ -2,10 +2,15 @@ package fr.alkanife.satania.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import fr.alkanife.botcommons.Lang;
+import fr.alkanife.satania.Satania;
+import net.dv8tion.jda.api.EmbedBuilder;
 
+import java.awt.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -53,7 +58,6 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     public void queuePrioritizePlaylist(AudioPlaylist audioPlaylist) {
-
         BlockingQueue<AudioTrack> newQueue = new LinkedBlockingQueue<>();
         for (AudioTrack track : audioPlaylist.getTracks())
             if (track != audioPlaylist.getTracks().get(0))
@@ -61,17 +65,6 @@ public class TrackScheduler extends AudioEventAdapter {
 
         newQueue.addAll(queue);
         queue = newQueue;
-
-        /*if (!player.startTrack(track, true)) {
-            if (priority) {
-                BlockingQueue<AudioTrack> newQueue = new LinkedBlockingQueue<>();
-                newQueue.offer(track);
-                newQueue.addAll(queue);
-                queue = newQueue;
-            } else {
-                queue.offer(track);
-            }
-        }*/
     }
 
     /**
@@ -96,6 +89,23 @@ public class TrackScheduler extends AudioEventAdapter {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
         if (endReason.mayStartNext) {
             nextTrack();
+        }
+    }
+
+    @Override
+    public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+        //TODO found how to stop the log spam
+
+        if (Satania.getLastCommandChannel() != null) {
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.setTitle(Lang.t("jukebox-playing-error-title"));
+            embedBuilder.setColor(new Color(193, 0, 0));
+            embedBuilder.setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")"
+                    + " " + Lang.t("jukebox-by") + " [" + track.getInfo().author + "](" + track.getInfo().uri + ")\n\n" +
+                    Lang.t("jukebox-playing-error-message"));
+            embedBuilder.setThumbnail("https://img.youtube.com/vi/" + track.getIdentifier() + "/0.jpg");
+
+            Satania.getLastCommandChannel().sendMessage(embedBuilder.build()).queue();
         }
     }
 }

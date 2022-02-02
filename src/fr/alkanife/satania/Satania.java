@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ import java.util.List;
 
 public class Satania {
 
-    private static String version = "prod-1.0.0";
+    private static String version = "prod-1.1.0";
 
     private static HashMap<String, Object> configurationValues;
     private static String creatorID;
@@ -37,6 +38,7 @@ public class Satania {
     private static Handler handler;
 
     private static Guild playingGuild;
+    private static TextChannel lastCommandChannel;
     private static AudioPlayerManager playerManager;
     private static AudioPlayer player;
     private static TrackScheduler trackScheduler;
@@ -204,5 +206,13 @@ public class Satania {
 
     public static void setPlayingGuild(Guild playingGuild) {
         Satania.playingGuild = playingGuild;
+    }
+
+    public static TextChannel getLastCommandChannel() {
+        return lastCommandChannel;
+    }
+
+    public static void setLastCommandChannel(TextChannel lastCommandChannel) {
+        Satania.lastCommandChannel = lastCommandChannel;
     }
 }

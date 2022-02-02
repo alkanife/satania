@@ -134,19 +134,28 @@ public class Events extends ListenerAdapter {
         SubcommandData jukeboxSkip = new SubcommandData("skip", "Passer une ou plusieurs musiques")
                 .addOption(OptionType.INTEGER, "input", "Nombre de musiques à passer", false);
 
+        SubcommandData jukeboxRemove = new SubcommandData("remove", "Retirer une musique à la file d'attente")
+                .addOption(OptionType.INTEGER, "input", "Position dans la file de la musique (/jukebox queue)", false);
+
+        SubcommandData jukeboxQueue = new SubcommandData("queue", "Voir la file d'attente")
+                .addOption(OptionType.INTEGER, "input", "Page", false);
+
         SubcommandData jukeboxShuffle = new SubcommandData("shuffle", "Mélanger la file d'attente");
-        SubcommandData jukeboxQueue = new SubcommandData("queue", "Voir la file d'attente");
         SubcommandData jukeboxStop = new SubcommandData("stop", "Arrêter le jukebox");
         SubcommandData jukeboxClear = new SubcommandData("clear", "Vider la file d'attente");
-        jukebox.addSubcommands(jukeboxPlay, jukeboxPlaynext, jukeboxSkip, jukeboxShuffle, jukeboxQueue, jukeboxStop, jukeboxClear);
+        jukebox.addSubcommands(jukeboxPlay, jukeboxPlaynext, jukeboxSkip, jukeboxShuffle, jukeboxQueue, jukeboxStop, jukeboxClear, jukeboxRemove);
 
         CommandData serverinfo = new CommandData("serverinfo", "Donne des infos sympa sur le serveur");
         CommandData memberinfo = new CommandData("memberinfo", "Donne des infos sympa sur un membre")
                 .addOption(OptionType.USER, "input", "Membre concerné", true);
         CommandData emoteinfo = new CommandData("emoteinfo", "Donne des infos sympa sur une emote")
                 .addOption(OptionType.STRING, "input", "L'emote", true);
+        CommandData satania = new CommandData("satania", "C'est moi !");
 
-        readyEvent.getJDA().updateCommands().addCommands(jukebox, serverinfo, memberinfo, emoteinfo).queue();
+        CommandData copy = new CommandData("copy", "Fait un CTRL-C CTRL-V d'un message envoyé mais conserve la synthaxe")
+                .addOption(OptionType.STRING, "input", "URL du message", true);
+
+        readyEvent.getJDA().updateCommands().addCommands(jukebox, serverinfo, memberinfo, emoteinfo, satania, copy).queue();
     }
 
 }
