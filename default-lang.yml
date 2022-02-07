@@ -49,3 +49,6 @@ jukebox-command-remove-title: "Titre retiré de la file d'attente"
 jukebox-playing-error-title: "Je n''ai pas réussi à jouer le morceau suivant"
 jukebox-by: "par"
 jukebox-playing-error-message: "Le lien n''est peut-être pas opérationnel, ou son format n''est pas lisible pour moi. Pour YouTube veuillez noter que je ne peux pas jouer des vidéos restreintes (contenu YT Premium, pour enfant, sensible etc)."
+
+jukebox-playing-error-nomembers-title: "Y''a quelqu''un ?"
+jukebox-playing-error-nomembers-desc: "Je me suis déconnectée car il n''y avait plus personne dans mon salon."
