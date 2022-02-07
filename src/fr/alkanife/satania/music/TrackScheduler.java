@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import fr.alkanife.botcommons.Lang;
 import fr.alkanife.satania.Satania;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.awt.*;
 import java.util.concurrent.BlockingQueue;
@@ -74,6 +75,7 @@ public class TrackScheduler extends AudioEventAdapter {
         // Start the next track, regardless of if something is already playing or not. In case queue was empty, we are
         // giving null to startTrack, which is a valid argument and will simply stop the player.
         player.startTrack(queue.poll(), false);
+        Satania.addPlayedMusics();
     }
 
     public BlockingQueue<AudioTrack> getQueue() {
@@ -86,7 +88,22 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
+        VoiceChannel voiceChannel = Satania.getPlayingGuild().getAudioManager().getConnectedChannel();
+
+        if (voiceChannel != null) {
+            if (voiceChannel.getMembers().size() == 1) {
+                Music.reset();
+
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                embedBuilder.setTitle(Lang.t("jukebox-playing-error-nomembers-title"));
+                embedBuilder.setColor(new Color(193, 0, 0));
+                embedBuilder.setDescription(Lang.t("jukebox-playing-error-nomembers-desc"));
+
+                Satania.getLastCommandChannel().sendMessage(embedBuilder.build()).queue();
+                return;
+            }
+        }
+
         if (endReason.mayStartNext) {
             nextTrack();
         }
@@ -94,7 +111,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        //TODO found how to stop the log spam
+        Satania.addFailedToPlay();
 
         if (Satania.getLastCommandChannel() != null) {
             EmbedBuilder embedBuilder = new EmbedBuilder();

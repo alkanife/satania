@@ -24,13 +24,13 @@ public class Music {
         Satania.getPlayerManager().loadItemOrdered(Satania.getPlayer(), url, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
+                Satania.addAddedMusics();
 
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setTitle(Lang.t("jukebox-command-play-added-title") + " " + (priority ? Lang.t("jukebox-command-priority") : ""));
-                embedBuilder.setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")\n\n" +
-                        Lang.t("jukebox-command-play-added-source") + " **[" + track.getInfo().author + "](" + track.getInfo().uri + ")**\n" +
-                        Lang.t("jukebox-command-play-added-duration") + " `" + Utils.musicDuration(track.getDuration()) + "`" +
-                        (priority ? "" : ("\n" + (Lang.t("jukebox-command-play-added-position") + " `" + (Satania.getTrackScheduler().getQueue().size() + 1) + "`"))));
+                embedBuilder.setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ") " + Lang.t("jukebox-by")
+                        + " [" + track.getInfo().author + "](" + track.getInfo().uri + ") [" + Utils.musicDuration(track.getDuration()) + "]" +
+                        (priority ? "" : ("\n\n" + (Lang.t("jukebox-command-play-added-position") + " `" + (Satania.getTrackScheduler().getQueue().size() + 1) + "`"))));
                 embedBuilder.setThumbnail("https://img.youtube.com/vi/" + track.getIdentifier() + "/0.jpg");
 
                 slashCommandEvent.getHook().sendMessageEmbeds(embedBuilder.build()).queue();
@@ -48,16 +48,19 @@ public class Music {
                 connectAndPlay(slashCommandEvent, firstTrack, priority);
 
                 if (url.startsWith("ytsearch")) {
+                    Satania.addAddedMusics();
+
                     EmbedBuilder embedBuilder = new EmbedBuilder();
                     embedBuilder.setTitle(Lang.t("jukebox-command-play-added-title") + " " + (priority ? Lang.t("jukebox-command-priority") : ""));
-                    embedBuilder.setDescription("[" + firstTrack.getInfo().title + "](" + firstTrack.getInfo().uri + ")\n\n" +
-                            Lang.t("jukebox-command-play-added-source") + " **[" + firstTrack.getInfo().author + "](" + firstTrack.getInfo().uri + ")**\n" +
-                            Lang.t("jukebox-command-play-added-duration") + " `" + Utils.musicDuration(firstTrack.getDuration()) + "`" +
-                            (priority ? "" : ("\n" + (Lang.t("jukebox-command-play-added-position") + " `" + (Satania.getTrackScheduler().getQueue().size() + 1) + "`"))));
+                    embedBuilder.setDescription("[" + firstTrack.getInfo().title + "](" + firstTrack.getInfo().uri + ") " + Lang.t("jukebox-by")
+                            + " [" + firstTrack.getInfo().author + "](" + firstTrack.getInfo().uri + ") [" + Utils.musicDuration(firstTrack.getDuration()) + "]" +
+                            (priority ? "" : ("\n\n" + (Lang.t("jukebox-command-play-added-position") + " `" + (Satania.getTrackScheduler().getQueue().size() + 1) + "`"))));
                     embedBuilder.setThumbnail("https://img.youtube.com/vi/" + firstTrack.getIdentifier() + "/0.jpg");
 
                     slashCommandEvent.getHook().sendMessageEmbeds(embedBuilder.build()).queue();
                 } else {
+                    Satania.addAddedPlaylists();
+
                     Satania.getTrackScheduler().queuePrioritizePlaylist(playlist);
 
                     EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -65,6 +68,7 @@ public class Music {
                     embedBuilder.setDescription("[" + playlist.getName() + "](" + firstTrack.getInfo().uri + ")\n\n" +
                             Lang.t("jukebox-command-play-playlist-entries") + " `" + playlist.getTracks().size() + "`\n" +
                             Lang.t("jukebox-command-play-playlist-newtime") + " `" + Utils.musicDuration(Satania.getTrackScheduler().getQueueDuration()) + "`");
+
                     embedBuilder.setThumbnail("https://img.youtube.com/vi/" + firstTrack.getIdentifier() + "/0.jpg");
 
                     slashCommandEvent.getHook().sendMessageEmbeds(embedBuilder.build()).queue();

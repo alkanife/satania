@@ -187,6 +187,8 @@ public class Commands {
 
         switch (subCommand) {
             case "play":
+                Satania.addPlayCommand();
+
                 String url = slashCommandEvent.getOption("input").getAsString();
 
                 if (url.equalsIgnoreCase("default"))
@@ -199,6 +201,8 @@ public class Commands {
                 break;
 
             case "play_next":
+                Satania.addPlayNextCommand();
+
                 String url1 = slashCommandEvent.getOption("input").getAsString();
 
                 if (url1.equalsIgnoreCase("default"))
@@ -211,6 +215,8 @@ public class Commands {
                 break;
 
             case "remove":
+                Satania.addRemoveCommand();
+
                 if (Satania.getPlayer().getPlayingTrack() == null) {
                     slashCommandEvent.reply(Lang.t("jukebox-command-no-current")).queue();
                     return;
@@ -267,6 +273,8 @@ public class Commands {
                 break;
 
             case "skip":
+                Satania.addSkipCommand();
+
                 if (Satania.getPlayer().getPlayingTrack() == null) {
                     slashCommandEvent.reply(Lang.t("jukebox-command-no-current")).queue();
                     return;
@@ -303,6 +311,8 @@ public class Commands {
                 break;
 
             case "shuffle":
+                Satania.addShuffleCommand();
+
                 List<AudioTrack> audioTracks = new ArrayList<>(Satania.getTrackScheduler().getQueue());
 
                 Collections.shuffle(audioTracks);
@@ -318,11 +328,15 @@ public class Commands {
                 break;
 
             case "clear":
+                Satania.addClearCommand();
+
                 Satania.getTrackScheduler().setQueue(new LinkedBlockingQueue<>());
                 slashCommandEvent.reply(Lang.t("jukebox-command-clear")).queue();
                 break;
 
             case "queue":
+                Satania.addQueueCommand();
+
                 AudioTrack current = Satania.getPlayer().getPlayingTrack();
 
                 if (current == null) {

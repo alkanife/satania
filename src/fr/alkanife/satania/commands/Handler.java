@@ -8,11 +8,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 public class Handler extends CommandHandler {
 
-    public static int executed = 0;
-
     @Override
     public void success(SlashCommandEvent slashCommandEvent) {
-        executed++;
     }
 
     @Override

@@ -19,14 +19,11 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Satania {
 
-    private static String version = "prod-1.1.0";
+    private static String version = "prod-1.1.1";
 
     private static HashMap<String, Object> configurationValues;
     private static String creatorID;
@@ -42,6 +39,18 @@ public class Satania {
     private static AudioPlayerManager playerManager;
     private static AudioPlayer player;
     private static TrackScheduler trackScheduler;
+
+    private static int playedMusics = 0;
+    private static int failedToPlay = 0;
+    private static int playCommand = 0;
+    private static int playNextCommand = 0;
+    private static int addedMusics = 0;
+    private static int addedPlaylists = 0;
+    private static int queueCommand = 0;
+    private static int skipCommand = 0;
+    private static int shuffleCommand = 0;
+    private static int removeCommand = 0;
+    private static int clearCommand = 0;
 
     public static void main(String[] args) {
         Utils.clearTerminal();
@@ -214,5 +223,125 @@ public class Satania {
 
     public static void setLastCommandChannel(TextChannel lastCommandChannel) {
         Satania.lastCommandChannel = lastCommandChannel;
+    }
+
+    //STATS
+    public static int getPlayedMusics() {
+        return playedMusics;
+    }
+
+    public static int getFailedToPlay() {
+        return failedToPlay;
+    }
+
+    public static int getPlayCommand() {
+        return playCommand;
+    }
+
+    public static int getPlayNextCommand() {
+        return playNextCommand;
+    }
+
+    public static int getAddedMusics() {
+        return addedMusics;
+    }
+
+    public static int getAddedPlaylists() {
+        return addedPlaylists;
+    }
+
+    public static int getQueueCommand() {
+        return queueCommand;
+    }
+
+    public static int getSkipCommand() {
+        return skipCommand;
+    }
+
+    public static int getShuffleCommand() {
+        return shuffleCommand;
+    }
+
+    public static int getRemoveCommand() {
+        return removeCommand;
+    }
+
+    public static int getClearCommand() {
+        return clearCommand;
+    }
+
+    public static int getAllMusicsCommands() {
+        return playCommand + playNextCommand + queueCommand + skipCommand + shuffleCommand + removeCommand + clearCommand;
+    }
+
+    public static void addPlayedMusics() {
+        Satania.playedMusics = Satania.playedMusics + 1;
+    }
+
+    public static void addFailedToPlay() {
+        Satania.failedToPlay = Satania.failedToPlay + 1;
+    }
+
+    public static void addPlayCommand() {
+        Satania.playCommand = Satania.playCommand + 1;
+    }
+
+    public static void addPlayNextCommand() {
+        Satania.playNextCommand = Satania.playNextCommand + 1;
+    }
+
+    public static void addAddedMusics() {
+        Satania.addedMusics = Satania.addedMusics + 1;
+    }
+
+    public static void addAddedPlaylists() {
+        Satania.addedPlaylists = Satania.addedPlaylists + 1;
+    }
+
+    public static void addQueueCommand() {
+        Satania.queueCommand = Satania.queueCommand + 1;
+    }
+
+    public static void addSkipCommand() {
+        Satania.skipCommand = Satania.skipCommand + 1;
+    }
+
+    public static void addShuffleCommand() {
+        Satania.shuffleCommand = Satania.shuffleCommand + 1;
+    }
+
+    public static void addRemoveCommand() {
+        Satania.removeCommand = Satania.removeCommand + 1;
+    }
+
+    public static void addClearCommand() {
+        Satania.clearCommand = Satania.clearCommand + 1;
+    }
+
+    public static String printStats() {
+        return printStats(false);
+    }
+
+    public static String printStats(boolean embed) {
+        String comma = "";
+
+        if (embed)
+            comma = "`";
+
+        StringBuilder stats = new StringBuilder();
+        stats.append("'playedMusics': ").append(comma).append(Satania.getPlayedMusics()).append(comma).append("\n");
+        stats.append("'failedToPlay': ").append(comma).append(Satania.getFailedToPlay()).append(comma).append("\n");
+        stats.append("'playCommand': ").append(comma).append(Satania.getPlayCommand()).append(comma).append("\n");
+        stats.append("'playNextCommand': ").append(comma).append(Satania.getPlayNextCommand()).append(comma).append("\n");
+        stats.append("'addedMusics': ").append(comma).append(Satania.getAddedMusics()).append(comma).append("\n");
+        stats.append("'addedPlaylists': ").append(comma).append(Satania.getAddedPlaylists()).append(comma).append("\n");
+        stats.append("'queueCommand': ").append(comma).append(Satania.getQueueCommand()).append(comma).append("\n");
+        stats.append("'skipCommand': ").append(comma).append(Satania.getSkipCommand()).append(comma).append("\n");
+        stats.append("'shuffleCommand': ").append(comma).append(Satania.getShuffleCommand()).append(comma).append("\n");
+        stats.append("'removeCommand': ").append(comma).append(Satania.getRemoveCommand()).append(comma).append("\n");
+        stats.append("'clearCommand': ").append(comma).append(Satania.getClearCommand()).append(comma).append("\n");
+        stats.append("'Total music commands': ").append(comma).append(Satania.getAllMusicsCommands()).append(comma);
+
+        return stats.toString();
     }
 }

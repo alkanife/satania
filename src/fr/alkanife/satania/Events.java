@@ -46,7 +46,9 @@ public class Events extends ListenerAdapter {
             case "reboot":
                 messageReceivedEvent.getMessage().reply("Rebooooooooooting").queue(message1 -> {
                     Satania.getLogger().info("Shutting down");
-                    Satania.getJda().shutdownNow();
+                    Satania.getLogger().info("STATS :");
+                    Satania.getLogger().info(Satania.printStats());
+                    Satania.getJda().shutdown();
                     System.exit(0);
                 });
                 break;
@@ -94,25 +96,34 @@ public class Events extends ListenerAdapter {
                 break;
 
             case "info":
-                EmbedBuilder embedBuilder = new EmbedBuilder();
-                embedBuilder.setThumbnail(messageReceivedEvent.getJDA().getSelfUser().getAvatarUrl());
+                EmbedBuilder infoEmbed = new EmbedBuilder();
+                infoEmbed.setThumbnail(messageReceivedEvent.getJDA().getSelfUser().getAvatarUrl());
 
-                StringBuilder description = new StringBuilder();
-                description.append("updays : `").append(Utils.getUpDays()).append("`\n");
-                description.append("version : `").append(Satania.getVersion()).append("`\n");
-                description.append("[default playlist](").append(Satania.getDefaultPlaylist()).append(")\n");
-                description.append("creator-id : `").append(Satania.getCreatorID()).append("`\n");
-                description.append("allowed IDs :\n");
+                StringBuilder infoDesc = new StringBuilder();
+                infoDesc.append("updays : `").append(Utils.getUpDays()).append("`\n");
+                infoDesc.append("version : `").append(Satania.getVersion()).append("`\n");
+                infoDesc.append("[default playlist](").append(Satania.getDefaultPlaylist()).append(")\n");
+                infoDesc.append("creator-id : `").append(Satania.getCreatorID()).append("`\n");
+                infoDesc.append("allowed IDs :\n");
                 for (String a : Satania.getAllowed())
-                    description.append(" - `").append(a).append("`\n");
+                    infoDesc.append(" - `").append(a).append("`\n");
 
-                embedBuilder.setDescription(description);
+                infoEmbed.setDescription(infoDesc);
 
-                messageReceivedEvent.getMessage().reply(embedBuilder.build()).queue();
+                messageReceivedEvent.getMessage().reply(infoEmbed.build()).queue();
+                break;
+
+            case "stats":
+                EmbedBuilder statsEmbed = new EmbedBuilder();
+                statsEmbed.setThumbnail(messageReceivedEvent.getJDA().getSelfUser().getAvatarUrl());
+                statsEmbed.setDescription(Satania.printStats(true));
+
+                messageReceivedEvent.getMessage().reply(statsEmbed.build()).queue();
                 break;
 
             default:
-                messageReceivedEvent.getMessage().reply("`Commandes : reboot, reload, info`").queue();
+                messageReceivedEvent.getMessage().reply("Commandes administratives :\n" +
+                        "> `reboot`, `reload`, `info`, `stats``").queue();
                 break;
         }
     }
